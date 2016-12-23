@@ -1,4 +1,5 @@
 import csv
+import pickle
 
 """
 Markov-like (probably) tweet generator.
@@ -53,13 +54,20 @@ class MarkovTweeter:
                     if self._ignore_replies and tweet['in_reply_to_user_id']:
                         continue
 
-                tweet_sample.append(tweet['text'])
+                    tweet_sample.append(tweet['text'])
 
                 if len(tweet_sample) < 1:
                     raise MarkovException('No usable tweets found in archive')
 
         except IOError:
             raise MarkovException('Could not load Twitter Archive')
+
+        try:
+            with open('tweets.dat', mode='wb') as tweet_data:
+                pickle.dump(tweet_sample, tweet_data)
+
+        except IOError:
+            raise MarkovException('Could not write tweet sample')
 
 """
 Generic Exception for errors in the MarkovTweeter class
