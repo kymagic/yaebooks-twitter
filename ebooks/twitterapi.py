@@ -5,15 +5,7 @@ from util import eprint
 """
 Wrapper class for the Twitter API.
 
-Handles two api connections: one for the source account,
-and one for the bot that will tweet the 'ebooks' version.
-
-Methods relating to these two take a which argument, specifying which
-account the action should be performed on. Pass to these methods one of the following:
-    - self.BOT
-    - self.SRC
-
-On initialisation, the class expects credtials for both accounts to be in a
+On initialisation, the class expects credtials for the bot account to be in a
 JSON file located at ./credentials.json . The structure for the JSON object
 can be seen in the file credentials.json.sample .
 
@@ -22,9 +14,6 @@ this class will throw an exception in the constructor if the credentials file
 cannot be read or deserialised.
 """
 class TwitterApi:
-
-    BOT = "bot"
-    SRC = "src"
 
     """
     Default constructor. Attempts to load the credentials file, and will fail
@@ -38,33 +27,30 @@ class TwitterApi:
 
         self._credentials = json.loads(credentials_json)
 
-        # Create the variables to store the API objects in
-        self._api = {
-            self.BOT: None,
-            self.SRC: None
-        }
+        # The API object will live here
+        self._api = None
 
     """
-    Gatekeeper method checking that the requested API is authenticated.
+    Gatekeeper method checking that the API is authenticated.
     """
-    def _requireAuth(self, which):
-        if self._api[which] == None:
-            self._api[which] = twitter.Api(
-                consumer_key = self._credentials[which]['consumer_key'],
-                consumer_secret = self._credentials[which]['consumer_secret'],
-                access_token_key = self._credentials[which]['access_token_key'],
-                access_token_secret = self._credentials[which]['access_token_secret']
+    def _requireAuth(self):
+        if self._api == None:
+            self._api = twitter.Api(
+                consumer_key = self._credentials['consumer_key'],
+                consumer_secret = self._credentials['consumer_secret'],
+                access_token_key = self._credentials['access_token_key'],
+                access_token_secret = self._credentials['access_token_secret']
             )
 
         if self._api[which] == None:
-            raise ApiException('Could not authenticate API for', which)
+            raise ApiException('Could not authenticate API')
 
     """
-    Send a tweet as the specified account
+    Send a tweet
     """
-    def tweet(self, message, which):
-        self._requireAuth(which)
-        self._api[which].PostUpdate(message)
+    def tweet(self, message):
+        self._requireAuth()
+        self._api.PostUpdate(message)
 
 """
 Generic Exception for errors in the TwitterAPI class
