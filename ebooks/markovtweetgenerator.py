@@ -34,11 +34,10 @@ class MarkovTweetGenerator:
     """
     def _update_map(self, precedent, word):
         if precedent in self._chain_map:
-            pMap = self._chain_map[precedent]
-            if word in pMap:
-                pMap[word] += 1
+            if word in self._chain_map[precedent]:
+                self._chain_map[precedent][word] += 1
             else:
-                pMap[word] = 1
+                self._chain_map[precedent][word] = 1
         else:
             self._chain_map[precedent] = {word: 1}
 
@@ -64,7 +63,18 @@ class MarkovTweetGenerator:
             words = tweet.split()
             precedent = self._TWEET_BEGIN
             for word in words:
+                # Strip out some clutter we don't want
+                if word.startswith('\'') or word.startswith('"'):
+                    word = word[1:]
+                if word.endswith('\'') or word.endswith('"'):
+                    word = word[:-1]
+                if word.startswith('(') or word.startswith('['):
+                    word = word[1:]
+                if word.endswith(']') or word.endswith(')'):
+                    word = word[:-1]
                 if not word.startswith("@"): # Exclude usernames
-                    self._update_map(precedent, word)
-                    precedent = word
-            self._update_map(word, self._TWEET_END)
+                    if not word.startswith('http:'):
+                        self._update_map(precedent, word)
+                        precedent = word
+
+            self._update_map(precedent, self._TWEET_END)
