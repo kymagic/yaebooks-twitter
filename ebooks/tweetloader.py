@@ -56,7 +56,7 @@ class TweetLoader:
     """
     Returns the list of tweets that were loaded
     """
-    def getTweets(self):
+    def get_tweets(self):
         return self._tweet_sample
 
     """
