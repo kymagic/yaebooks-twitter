@@ -25,8 +25,30 @@ class MarkovTweeter:
         self._ignore_retweets = ignore_retweets
         self._ignore_replies = ignore_replies
 
-        filtered_archive = self._load_filtered_archive()
-        self._write_sample(filtered_archive)
+        # Try to load an existing archive
+        tweet_sample = self._load_sample()
+        if not tweet_sample:
+            print('could not load smaple')
+            # Couldn't load a sample. Try to generate one and write it out
+            tweet_sample = self._generate_sample_and_write()
+            if not tweet_sample:
+                raise MarkovException('Couldn\'t load sample or Twitter Archive')
+
+    """
+    Attempts to generate a new tweet sample from a Twitter Archive.
+        * Loads the Twitter Archive from disk
+        * Filters the Archive
+        * Attempts to write it back out to disk
+
+    Returns: A list of tweets in the tweet sample if one could be loaded and
+        filtered; None otherwise
+    """
+    def _generate_sample_and_write(self):
+        tweet_sample = self._load_filtered_archive()
+        if not tweet_sample:
+            return False
+        self._write_sample(tweet_sample)
+        return tweet_sample
 
     """
     Loads the Twitter Archive from the tweets.csv file, keeping only
@@ -91,6 +113,19 @@ class MarkovTweeter:
 
         except IOError:
             return False
+
+    """
+    Attempts to load a filtered tweet sample from disk
+
+    Returns: The list of tweets in the sample, or None if unsuccessful
+    """
+    def _load_sample(self):
+        try:
+            with open('tweets.dat', mode='rb') as tweet_data:
+                tweet_sample = pickle.load(tweet_data)
+                return tweet_sample
+        except IOError:
+            return None 
 
 """
 Generic Exception for errors in the MarkovTweeter class
