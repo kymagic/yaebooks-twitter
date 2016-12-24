@@ -51,6 +51,14 @@ class TweetLoader:
                 if not tweet_sample:
                     tweet_sample = loaded_data[1]
 
+        self._tweet_sample = tweet_sample
+
+    """
+    Returns the list of tweets that were loaded
+    """
+    def getTweets(self):
+        return self._tweet_sample
+
     """
     Attempts to generate a new tweet sample from a Twitter Archive.
         * Loads the Twitter Archive from disk
