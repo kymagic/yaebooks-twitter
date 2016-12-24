@@ -1,5 +1,6 @@
 import csv
 import pickle
+from util import md5sum
 
 """
 Markov-like (probably) tweet generator.
@@ -26,12 +27,15 @@ class MarkovTweeter:
         self._ignore_replies = ignore_replies
 
         # Try to load an existing archive
-        tweet_sample = self._load_sample()
-        if not tweet_sample:
+        loaded_data =  self._load_sample()
+        if not loaded_data:
             # Couldn't load a sample. Try to generate one and write it out
             tweet_sample = self._generate_sample_and_write()
             if not tweet_sample:
                 raise MarkovException('Couldn\'t load sample or Twitter Archive')
+        else:
+            (archive_hash, tweet_sample) = loaded_data
+            print('Archive hash is:', archive_hash)
 
     """
     Attempts to generate a new tweet sample from a Twitter Archive.
@@ -43,10 +47,10 @@ class MarkovTweeter:
         filtered; None otherwise
     """
     def _generate_sample_and_write(self):
-        tweet_sample = self._load_filtered_archive()
+        (archive_hash, tweet_sample) = self._load_filtered_archive()
         if not tweet_sample:
             return False
-        self._write_sample(tweet_sample)
+        self._write_sample(archive_hash, tweet_sample)
         return tweet_sample
 
     """
@@ -56,8 +60,9 @@ class MarkovTweeter:
     Arguments:
         - filename: the location of the Twitter Archive (default 'tweets.csv')
 
-    Returns a list of matching tweets, or None if no tweets could be loaded because
-    either no tweets matchd the filter, or the archive could not be read
+    Returns: A tuple where the first element is the md5 hash of the archive
+        and the second is a list of the filtered tweets. Returns None if
+        the archive could not be loaded.
     """
     def _load_filtered_archive(self, filename='tweets.csv'):
         try:
@@ -90,7 +95,8 @@ class MarkovTweeter:
                 if len(tweet_sample) < 1:
                     return None
 
-                return tweet_sample
+            archive_hash = md5sum(filename)
+            return (archive_hash, tweet_sample)
 
         except IOError:
             return None
@@ -104,10 +110,11 @@ class MarkovTweeter:
 
     Returns: True if writing was successful, False otherwise
     """
-    def _write_sample(self, tweet_sample, filename='tweets.dat'):
+    def _write_sample(self, archive_hash, tweet_sample, filename='tweets.dat'):
         try:
             with open('tweets.dat', mode='wb') as tweet_data:
-                pickle.dump(tweet_sample, tweet_data)
+                data = (archive_hash, tweet_sample)
+                pickle.dump(data, tweet_data)
                 return True
 
         except IOError:
@@ -116,13 +123,15 @@ class MarkovTweeter:
     """
     Attempts to load a filtered tweet sample from disk
 
-    Returns: The list of tweets in the sample, or None if unsuccessful
+    Returns: A tuple where the first element is the md5 hash of the archive from
+        which the tweets were taken, and the second is a list of the filtered
+        tweets. Returns None if deserialisation was unsuccessful.
     """
     def _load_sample(self):
         try:
             with open('tweets.dat', mode='rb') as tweet_data:
-                tweet_sample = pickle.load(tweet_data)
-                return tweet_sample
+                deserialised = pickle.load(tweet_data)
+                return deserialised
         except IOError:
             return None
 
