@@ -25,12 +25,22 @@ class MarkovTweeter:
         self._ignore_retweets = ignore_retweets
         self._ignore_replies = ignore_replies
 
+        filtered_archive = self._load_filtered_archive()
+        self._write_sample(filtered_archive)
+
     """
-    Loads the Twitter Archive from the tweets.csv file
+    Loads the Twitter Archive from the tweets.csv file, keeping only
+    tweets that match the filters specified in the constructor
+
+    Arguments:
+        - filename: the location of the Twitter Archive (default 'tweets.csv')
+
+    Returns a list of matching tweets, or None if no tweets could be loaded because
+    either no tweets matchd the filter, or the archive could not be read
     """
-    def load_archive(self):
+    def _load_filtered_archive(self, filename='tweets.csv'):
         try:
-            with open('tweets.csv') as twitter_archive:
+            with open(filename) as twitter_archive:
                 tweetreader = csv.DictReader(twitter_archive)
 
                 #### Twitter Archive Headers:
@@ -57,17 +67,30 @@ class MarkovTweeter:
                     tweet_sample.append(tweet['text'])
 
                 if len(tweet_sample) < 1:
-                    raise MarkovException('No usable tweets found in archive')
+                    return None
+
+                return tweet_sample
 
         except IOError:
-            raise MarkovException('Could not load Twitter Archive')
+            return None
 
+    """
+    Writes the tweet sample to disk.
+
+    Arguments:
+        - tweet_sample: A list of tweets
+        - filename: The file to write to (default: 'tweets.dat')
+
+    Returns: True if writing was successful, False otherwise
+    """
+    def _write_sample(self, tweet_sample, filename='tweets.dat'):
         try:
             with open('tweets.dat', mode='wb') as tweet_data:
                 pickle.dump(tweet_sample, tweet_data)
+                return True
 
         except IOError:
-            raise MarkovException('Could not write tweet sample')
+            return False
 
 """
 Generic Exception for errors in the MarkovTweeter class
