@@ -28,7 +28,6 @@ class MarkovTweeter:
         # Try to load an existing archive
         tweet_sample = self._load_sample()
         if not tweet_sample:
-            print('could not load smaple')
             # Couldn't load a sample. Try to generate one and write it out
             tweet_sample = self._generate_sample_and_write()
             if not tweet_sample:
@@ -125,7 +124,7 @@ class MarkovTweeter:
                 tweet_sample = pickle.load(tweet_data)
                 return tweet_sample
         except IOError:
-            return None 
+            return None
 
 """
 Generic Exception for errors in the MarkovTweeter class
