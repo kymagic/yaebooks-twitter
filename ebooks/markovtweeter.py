@@ -35,7 +35,22 @@ class MarkovTweeter:
                 raise MarkovException('Couldn\'t load sample or Twitter Archive')
         else:
             (archive_hash, tweet_sample) = loaded_data
-            print('Archive hash is:', archive_hash)
+            # Check hash against disk version
+            try:
+                current_archive_hash = md5sum('tweets.csv')
+                if current_archive_hash != archive_hash:
+                    # We should try regenerating the archive
+                    old_tweet_sample = tweet_sample
+                    tweet_sample = self._generate_sample_and_write()
+                    # Keep the one we loaded from disk if generating a new one failed
+                    if not tweet_sample:
+                        tweet_sample = old_tweet_sample
+            except IOError:
+                # We could not load the Twitter Archive for some reason
+                # Fall back to the deserialised version, but first Check
+                # that we have something left
+                if not tweet_sample:
+                    tweet_samlple = loaded_data[1]
 
     """
     Attempts to generate a new tweet sample from a Twitter Archive.
