@@ -23,6 +23,15 @@ class MarkovTweetGenerator:
 
         self._generate_chain()
 
+    """
+    Updates the internal chain map with a word and its preceding word.
+
+    If the sequence "<precedent> <word>" has never been seen before, the
+    chain map will include this sequence with a count of 1.
+
+    If the sequence has been seen before, the chain map will increment the count
+    on this sequence.
+    """
     def _update_map(self, precedent, word):
         if precedent in self._chain_map:
             pMap = self._chain_map[precedent]
@@ -33,13 +42,29 @@ class MarkovTweetGenerator:
         else:
             self._chain_map[precedent] = {word: 1}
 
+    """
+    Populates the internal chain map with the number of times each given
+    word transition has been seen. E.g. if the tweets list was as follows:
+        [
+            "Hello bob",
+            "Hello bob",
+            "Hello john"
+        ]
 
+    then the resulting chain map would be:
+
+        TWEET_BEGIN => "Hello"  : 3
+        "Hello"     => "bob"    : 2
+        "Hello"     => "john"   : 1
+        "bob"       => TWEET_END: 2
+        "john"      => TWEET_END: 1
+    """
     def _generate_chain(self):
         for tweet in self._tweets:
             words = tweet.split()
             precedent = self._TWEET_BEGIN
             for word in words:
-                if not word.startswith("@"):
+                if not word.startswith("@"): # Exclude usernames
                     self._update_map(precedent, word)
                     precedent = word
             self._update_map(word, self._TWEET_END)
