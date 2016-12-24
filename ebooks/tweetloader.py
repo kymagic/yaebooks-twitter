@@ -49,7 +49,7 @@ class TweetLoader:
                 # Fall back to the deserialised version, but first Check
                 # that we have something left
                 if not tweet_sample:
-                    tweet_samlple = loaded_data[1]
+                    tweet_sample = loaded_data[1]
 
     """
     Attempts to generate a new tweet sample from a Twitter Archive.
