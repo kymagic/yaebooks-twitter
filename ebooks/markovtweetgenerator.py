@@ -22,6 +22,38 @@ class MarkovTweetGenerator:
         }
 
         self._generate_chain()
+        self._calculate_totals()
+
+    """
+    Generate a tweet based on the internal chain map
+    """
+    def generate_tweet(self):
+        pass
+
+    """
+    Generate a list of the total number of observed transitions from each
+    precedent in the chain map.
+
+    E.g. if the tweets list was as follows:
+        [
+            "Hello bob",
+            "Hello bob",
+            "Hello john"
+        ]
+
+    The count for "hello" would be 3 because we have seen a transition FROM
+    "hello" three times (but only to two words)
+    """
+    def _calculate_totals(self):
+        self._totals = {}
+        for precedent, possiblities in self._chain_map.items():
+            if precedent != self._TWEET_END:
+                self._totals[precedent] = sum(map(lambda x: x[1], possiblities.items()))
+            else:
+                self._totals[self._TWEET_END] = None
+
+        for precedent, count in self._totals.items():
+            print(precedent, count)
 
     """
     Updates the internal chain map with a word and its preceding word.
