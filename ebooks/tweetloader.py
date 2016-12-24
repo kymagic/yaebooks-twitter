@@ -3,18 +3,17 @@ import pickle
 from util import md5sum
 
 """
-Markov-like (probably) tweet generator.
+Loader class for turning a Twitter Archive into a list of tweets to be used later on.
 
 Source file is expected at ./tweets.csv , which any twitter user can download
 as their Twitter Archive.
 """
-class MarkovTweeter:
+class TweetLoader:
 
     """
     Constructor.
 
     Arguments:
-        << Twitter Archive Loading Options >>
         - ignore_retweets: Whether or not to ignore retweets (default True)
         - ignore_replies:  Whether or not to ignore replies  (default False)
     """
@@ -32,7 +31,7 @@ class MarkovTweeter:
             # Couldn't load a sample. Try to generate one and write it out
             tweet_sample = self._generate_sample_and_write()
             if not tweet_sample:
-                raise MarkovException('Couldn\'t load sample or Twitter Archive')
+                raise LoaderException('Couldn\'t load sample or Twitter Archive')
         else:
             (archive_hash, tweet_sample) = loaded_data
             # Check hash against disk version
@@ -151,8 +150,8 @@ class MarkovTweeter:
             return None
 
 """
-Generic Exception for errors in the MarkovTweeter class
+Generic Exception for errors in the TweetLoader class
 """
-class MarkovException(Exception):
+class LoaderException(Exception):
     def __init__(self, message):
         self.message = message
