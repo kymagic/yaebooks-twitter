@@ -1,4 +1,3 @@
-
 """
 Generates tweets using a Markov Chain (probably), given some training tweets
 """
@@ -13,12 +12,11 @@ class MarkovTweetGenerator:
     def __init__(self, tweets):
         self._tweets = tweets
 
-        self._TWEET_BEGIN = 0
-        self._TWEET_END = 1
+        self._punctuation = '\'"()[]{}<>,.;:?§±\\+_=-!£€$%^&*/`~'
 
         self._chain_map = {
-            self._TWEET_BEGIN: {},
-            self._TWEET_END: None,
+            TweetComponent(None, TweetComponent.TWEET_BEGIN): {},
+            TweetComponent(None, TweetComponent.TWEET_END): None,
         }
 
         self._generate_chain()
@@ -47,13 +45,13 @@ class MarkovTweetGenerator:
     def _calculate_totals(self):
         self._totals = {}
         for precedent, possiblities in self._chain_map.items():
-            if precedent != self._TWEET_END:
+            if precedent.position != TweetComponent.TWEET_END:
                 self._totals[precedent] = sum(map(lambda x: x[1], possiblities.items()))
             else:
-                self._totals[self._TWEET_END] = None
+                self._totals[TweetComponent(None, TweetComponent.TWEET_END)] = None
 
-        for precedent, count in self._totals.items():
-            print(precedent, count)
+        # for precedent, count in self._totals.items():
+        #     print(precedent, count)
 
     """
     Updates the internal chain map with a word and its preceding word.
@@ -92,21 +90,117 @@ class MarkovTweetGenerator:
     """
     def _generate_chain(self):
         for tweet in self._tweets:
-            words = tweet.split()
-            precedent = self._TWEET_BEGIN
-            for word in words:
-                # Strip out some clutter we don't want
-                if word.startswith('\'') or word.startswith('"'):
-                    word = word[1:]
-                if word.endswith('\'') or word.endswith('"'):
-                    word = word[:-1]
-                if word.startswith('(') or word.startswith('['):
-                    word = word[1:]
-                if word.endswith(']') or word.endswith(')'):
-                    word = word[:-1]
+            words = self._split_tweet(tweet)
+            precedent = TweetComponent(None, TweetComponent.TWEET_BEGIN)
+            for word in words[1:]:
                 if not word.startswith("@"): # Exclude usernames
                     if not word.startswith('http:'):
                         self._update_map(precedent, word)
                         precedent = word
 
-            self._update_map(precedent, self._TWEET_END)
+    """
+    Splits a tweet into a list of words.
+
+    This function also handles punctuation like brackets, quotes, and commas.
+    Additionally, the TWEET_BEGIN and TWEET_END markers are added
+
+    Arguments:
+        - tweet: The tweet to explode, as a string
+
+    Returns: The tweet as an array of words, with punctuation marked appropriately
+    """
+    def _split_tweet(self, tweet):
+        exploded_tweet = [TweetComponent(None, TweetComponent.TWEET_BEGIN)]
+        for raw_word in tweet.split():
+            while len(raw_word) and raw_word[0] in self._punctuation:
+                exploded_tweet.append(TweetComponent(raw_word[0], TweetComponent.PREFIX))
+                raw_word = raw_word[1:]
+            while len(raw_word) and raw_word[len(raw_word)-1] in self._punctuation:
+                exploded_tweet.append(TweetComponent(raw_word[0], TweetComponent.SUFFIX))
+                raw_word = raw_word[:-1]
+
+        if len(raw_word): # We may have eaten the whole 'word'
+            exploded_tweet.append(TweetComponent(raw_word))
+        else:
+            # Regardless, the last item should be a WORD or SUFFIX
+            if exploded_tweet[len(exploded_tweet) - 1].position != TweetComponent.SUFFIX:
+                exploded_tweet[len(exploded_tweet) - 1].position = TweetComponent.WORD
+
+        return exploded_tweet + [TweetComponent(None, TweetComponent.TWEET_END)]
+
+"""
+A string in a tweet, tagged with its position
+"""
+class TweetComponent:
+
+    # Tweet Boundaries
+    TWEET_BEGIN = 0
+    TWEET_END   = 1
+
+    # E.g. £100 would tag '£' as a PREFIX
+    PREFIX      = 2
+    SUFFIX      = 3
+    WORD        = 4
+
+    def __init__(self, word, position=WORD):
+        self.content = word
+        self.position = position
+
+    def startswith(self, prefix):
+        if self.content == None:
+            return False
+        else:
+            return self.content.startswith(prefix)
+
+    def endswith(self, suffix):
+        if self.content == None:
+            return False
+        else:
+            return self.content.endswith(prefix)
+
+    def __str__(self):
+        prefix = {
+            TweetComponent.TWEET_BEGIN : 'B',
+            TweetComponent.TWEET_END   : 'E',
+            TweetComponent.PREFIX      : 'P',
+            TweetComponent.SUFFIX      : 'S',
+            TweetComponent.WORD        : 'W'
+        }[self.position]
+
+        return '[' + prefix + '] ' + str(self.content)
+
+    """
+    Hash Function. Simply returns the hash of the content and position tuple
+    """
+    def __hash__(self):
+        return hash((self.content, self.position))
+
+    def __eq__(self, other):
+        return self.content == other.content and self.position == other.position
+
+    def __neq__(self, other):
+        return self.content != other.content or self.position != other.position
+
+    def __lt__(self, other):
+        if self.content == other.content:
+            return self.position < other.position
+        else:
+            return self.content < other.content
+
+    def __le__(self, other):
+        if self.content == other.content:
+            return self.position <= other.position
+        else:
+            return self.content <= other.content
+
+    def __gt__(self, other):
+        if self.content == other.content:
+            return self.position > other.position
+        else:
+            return self.content > other.content
+
+    def __ge__(self, other):
+        if self.content == other.content:
+            return self.position >= other.position
+        else:
+            return self.content >= other.content
