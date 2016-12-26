@@ -1,4 +1,5 @@
 import csv
+import html
 import pickle
 from util import md5sum
 
@@ -112,7 +113,7 @@ class TweetLoader:
                     if self._ignore_replies and tweet['in_reply_to_user_id']:
                         continue
 
-                    tweet_sample.append(tweet['text'])
+                    tweet_sample.append(html.unescape(tweet['text']))
 
                 if len(tweet_sample) < 1:
                     return None
