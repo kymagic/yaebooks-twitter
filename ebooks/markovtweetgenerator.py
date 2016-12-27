@@ -23,6 +23,27 @@ class MarkovTweetGenerator:
 
         self._generate_chain()
         self._calculate_totals()
+        print(self.get_formatted_tweet())
+
+    """
+    Pretty-print the given tweet (Array of TweetComponents) into a string
+    """
+    def format_tweet(self, tweet):
+        formatted = ""
+        previous_component = TweetComponent(None, TweetComponent.PREFIX)
+        for next_component in tweet:
+            if previous_component.position != TweetComponent.PREFIX:
+                if next_component.position != TweetComponent.SUFFIX:
+                    formatted += ' '
+            formatted += next_component.content
+            previous_component = next_component
+        return formatted
+
+    """
+    Generate a tweet and return the formatted version
+    """
+    def get_formatted_tweet(self):
+        return self.format_tweet(self.generate_tweet())
 
     """
     Generate a tweet based on the internal chain map
@@ -45,7 +66,7 @@ class MarkovTweetGenerator:
                     current_word = word
                     break
             tweet.append(current_word)
-        return tweet
+        return tweet[:-1]
 
 
     """
