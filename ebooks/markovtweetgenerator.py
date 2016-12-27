@@ -23,7 +23,6 @@ class MarkovTweetGenerator:
 
         self._generate_chain()
         self._calculate_totals()
-        print(self.truncate_tweet(self.get_formatted_tweet()))
 
     """
     Pretty-print the given tweet (Array of TweetComponents) into a string
