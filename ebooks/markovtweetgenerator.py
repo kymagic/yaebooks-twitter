@@ -58,7 +58,8 @@ class MarkovTweetGenerator:
                 if tweet[i].isalpha():
                     found_first = True
                     tweet_array[i] = tweet[i].upper()
-            if tweet[i-2:i] == '. ':
+            previous_string = tweet[i-2:i]
+            if previous_string == '. ' or previous_string == '! ' or previous_string == '; ':
                 tweet_array[i] = tweet[i].upper()
         return ''.join(tweet_array)
 
