@@ -22,6 +22,15 @@ class MarkovTweetGenerator:
         self._generate_chain()
         self._calculate_totals()
 
+        for precedent, transition_count in self._totals.items():
+            print(precedent, transition_count)
+
+        # for precedent, possibilities in self._chain_map.items():
+        #     print(precedent)
+        #     if precedent.content:
+        #         for word, count in possibilities.items():
+        #             print(' ', word, count)
+
     """
     Generate a tweet based on the internal chain map
     """
@@ -50,9 +59,6 @@ class MarkovTweetGenerator:
             else:
                 self._totals[TweetComponent(None, TweetComponent.TWEET_END)] = None
 
-        # for precedent, count in self._totals.items():
-        #     print(precedent, count)
-
     """
     Updates the internal chain map with a word and its preceding word.
 
@@ -63,6 +69,8 @@ class MarkovTweetGenerator:
     on this sequence.
     """
     def _update_map(self, precedent, word):
+        if word.content:
+            word.content = word.content.lower()
         if precedent in self._chain_map:
             if word in self._chain_map[precedent]:
                 self._chain_map[precedent][word] += 1
@@ -107,7 +115,7 @@ class MarkovTweetGenerator:
     Arguments:
         - tweet: The tweet to explode, as a string
 
-    Returns: The tweet as an array of words, with punctuation marked appropriately
+    Returns: The tweet as an array of TweetComponents, with punctuation marked appropriately
     """
     def _split_tweet(self, tweet):
         exploded_tweet = [TweetComponent(None, TweetComponent.TWEET_BEGIN)]
@@ -119,12 +127,13 @@ class MarkovTweetGenerator:
                 exploded_tweet.append(TweetComponent(raw_word[0], TweetComponent.SUFFIX))
                 raw_word = raw_word[:-1]
 
-        if len(raw_word): # We may have eaten the whole 'word'
-            exploded_tweet.append(TweetComponent(raw_word))
-        else:
-            # Regardless, the last item should be a WORD or SUFFIX
-            if exploded_tweet[len(exploded_tweet) - 1].position != TweetComponent.SUFFIX:
-                exploded_tweet[len(exploded_tweet) - 1].position = TweetComponent.WORD
+            if len(raw_word): # We may have eaten the whole 'word'
+                exploded_tweet.append(TweetComponent(raw_word, TweetComponent.WORD))
+            else:
+                # Regardless, the last item should be a WORD, TWEET_BEGIN, or SUFFIX
+                if exploded_tweet[len(exploded_tweet) - 1].position != TweetComponent.SUFFIX:
+                    if exploded_tweet[len(exploded_tweet) - 1].position != TweetComponent.TWEET_BEGIN:
+                        exploded_tweet[len(exploded_tweet) - 1].position = TweetComponent.WORD
 
         return exploded_tweet + [TweetComponent(None, TweetComponent.TWEET_END)]
 
@@ -157,6 +166,9 @@ class TweetComponent:
             return False
         else:
             return self.content.endswith(prefix)
+
+    def __repr__(self):
+        return self.__str__()
 
     def __str__(self):
         prefix = {
