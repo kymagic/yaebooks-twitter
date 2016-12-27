@@ -21,16 +21,6 @@ class MarkovTweetGenerator:
 
         self._generate_chain()
         self._calculate_totals()
-
-        for precedent, transition_count in self._totals.items():
-            print(precedent, transition_count)
-
-        # for precedent, possibilities in self._chain_map.items():
-        #     print(precedent)
-        #     if precedent.content:
-        #         for word, count in possibilities.items():
-        #             print(' ', word, count)
-
     """
     Generate a tweet based on the internal chain map
     """
@@ -124,7 +114,7 @@ class MarkovTweetGenerator:
                 exploded_tweet.append(TweetComponent(raw_word[0], TweetComponent.PREFIX))
                 raw_word = raw_word[1:]
             while len(raw_word) and raw_word[len(raw_word)-1] in self._punctuation:
-                exploded_tweet.append(TweetComponent(raw_word[0], TweetComponent.SUFFIX))
+                exploded_tweet.append(TweetComponent(raw_word[len(raw_word)-1], TweetComponent.SUFFIX))
                 raw_word = raw_word[:-1]
 
             if len(raw_word): # We may have eaten the whole 'word'
