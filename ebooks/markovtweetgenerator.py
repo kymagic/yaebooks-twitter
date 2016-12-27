@@ -42,7 +42,25 @@ class MarkovTweetGenerator:
     Generate a tweet and return the formatted version
     """
     def get_formatted_tweet(self):
-        return self.truncate_tweet(self.format_tweet(self.generate_tweet()))
+        return self._to_sentence_case(
+            self.truncate_tweet(
+            self.format_tweet(
+            self.generate_tweet())))
+
+    """
+    Converts the given (String) tweet into  sentence case
+    """
+    def _to_sentence_case(self, tweet):
+        found_first = False
+        tweet_array = list(tweet)
+        for i in range(len(tweet)):
+            if not found_first:
+                if tweet[i].isalpha():
+                    found_first = True
+                    tweet_array[i] = tweet[i].upper()
+            if tweet[i-2:i] == '. ':
+                tweet_array[i] = tweet[i].upper()
+        return ''.join(tweet_array)
 
     """
     Generate a tweet based on the internal chain map
