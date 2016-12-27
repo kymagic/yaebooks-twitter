@@ -166,7 +166,7 @@ class MarkovTweetGenerator:
             precedent = TweetComponent(None, TweetComponent.TWEET_BEGIN)
             for word in words[1:]:
                 if not word.startswith("@"): # Exclude usernames
-                    if not word.startswith('http:'):
+                    if not (word.lower().startswith('http:') or word.lower().startswith('https:')):
                         self._update_map(precedent, word)
                         precedent = word
 
@@ -230,6 +230,12 @@ class TweetComponent:
             return False
         else:
             return self.content.endswith(prefix)
+
+    def lower(self):
+        if self.content:
+            return self.content.lower()
+        else:
+            return ''
 
     def __repr__(self):
         return self.__str__()
