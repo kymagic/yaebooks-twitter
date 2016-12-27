@@ -23,7 +23,7 @@ class MarkovTweetGenerator:
 
         self._generate_chain()
         self._calculate_totals()
-        print(self.get_formatted_tweet())
+        print(self.truncate_tweet(self.get_formatted_tweet()))
 
     """
     Pretty-print the given tweet (Array of TweetComponents) into a string
@@ -68,6 +68,21 @@ class MarkovTweetGenerator:
             tweet.append(current_word)
         return tweet[:-1]
 
+    """
+    Truncates the (String) tweet to the given length.
+    If the given tweet is longer than the supplied length, then it is
+    cut to the largest number of words that will fit in
+    """
+    def truncate_tweet(self, tweet, length=140):
+        if len(tweet) > length:
+            new_tweet = tweet[0:length]
+            # Check if we coincidentally cut at a word boundary
+            if new_tweet[length+1] != ' ':
+                # We didn't; remove everything right of the rightmost space
+                new_tweet = new_tweet[0:new_tweet.rfind(' ')]
+            return new_tweet
+        # If we got here then we did nothing to the tweet
+        return tweet
 
     """
     Generate a list of the total number of observed transitions from each
