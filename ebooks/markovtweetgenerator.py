@@ -94,7 +94,7 @@ class MarkovTweetGenerator:
         if len(tweet) > length:
             new_tweet = tweet[0:length]
             # Check if we coincidentally cut at a word boundary
-            if tweet[length+1] != ' ':
+            if tweet[length] != ' ':
                 # We didn't; remove everything right of the rightmost space
                 new_tweet = new_tweet[0:new_tweet.rfind(' ')]
             return new_tweet
