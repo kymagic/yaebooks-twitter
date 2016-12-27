@@ -1,3 +1,5 @@
+from random import randrange
+
 """
 Generates tweets using a Markov Chain (probably), given some training tweets
 """
@@ -21,11 +23,30 @@ class MarkovTweetGenerator:
 
         self._generate_chain()
         self._calculate_totals()
+
     """
     Generate a tweet based on the internal chain map
     """
     def generate_tweet(self):
-        pass
+        current_word = TweetComponent(None, TweetComponent.TWEET_BEGIN)
+        tweet = []
+        while current_word != TweetComponent(None, TweetComponent.TWEET_END):
+            # Pick a random word from the possible endings
+            # So if we've seen 10 transitions from current_word
+            # we pick a number between 0 and 9, and walk along the
+            # Chain map entry for the current word until we encounter
+            # that number
+            possibilities = self._chain_map[current_word]
+            count = self._totals[current_word]
+            target = randrange(0,count+1)
+            for word, count in possibilities.items():
+                target -= count
+                if target <= 0:
+                    current_word = word
+                    break
+            tweet.append(current_word)
+        return tweet
+
 
     """
     Generate a list of the total number of observed transitions from each
