@@ -42,7 +42,7 @@ class MarkovTweetGenerator:
     Generate a tweet and return the formatted version
     """
     def get_formatted_tweet(self):
-        return self.format_tweet(self.generate_tweet())
+        return self.truncate_tweet(self.format_tweet(self.generate_tweet()))
 
     """
     Generate a tweet based on the internal chain map
