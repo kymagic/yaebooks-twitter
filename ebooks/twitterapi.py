@@ -42,7 +42,7 @@ class TwitterApi:
                 access_token_secret = self._credentials['access_token_secret']
             )
 
-        if self._api[which] == None:
+        if self._api == None:
             raise ApiException('Could not authenticate API')
 
     """
