@@ -1,7 +1,9 @@
 import csv
 import html
 import pickle
-from util import md5sum
+from util import eprint, md5sum
+import os
+import sys
 
 """
 Loader class for turning a Twitter Archive into a list of tweets to be used later on.
@@ -20,8 +22,14 @@ class TweetLoader:
     """
     def __init__(
         self,
+        data_dir='./data',
         ignore_retweets=True,
         ignore_replies=False):
+
+        self._data_dir = data_dir
+        if not os.path.isdir(self._data_dir):
+            eprint('Data directory does not exist')
+            sys.exit(1)
 
         self._ignore_retweets = ignore_retweets
         self._ignore_replies = ignore_replies

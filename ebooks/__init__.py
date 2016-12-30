@@ -2,13 +2,14 @@ from markovtweetgenerator import MarkovTweetGenerator
 from twitterapi import TwitterApi
 from tweetloader import TweetLoader
 from argparse import ArgumentParser
+import os
 
 
 def main():
 
     args = parse_arguments()
 
-    loader = TweetLoader()
+    loader = TweetLoader(data_dir=args.data_dir)
     generator = MarkovTweetGenerator(loader.get_tweets())
     tweet = generator.get_formatted_tweet()
 
@@ -22,6 +23,14 @@ def main():
 def parse_arguments():
 
     parser = ArgumentParser()
+
+    input_opts = parser.add_argument_group('input options')
+
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    default_data_dir = os.path.join(script_dir, 'data')
+    input_opts.add_argument('-d', '--data-dir',
+        help='Location of the data directory',
+        default=default_data_dir)
 
     output_opts = parser.add_argument_group('output options')
 
