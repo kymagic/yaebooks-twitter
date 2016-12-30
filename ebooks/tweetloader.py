@@ -17,6 +17,7 @@ class TweetLoader:
     Constructor.
 
     Arguments:
+        - data_dir: Folder in which data files are stored
         - ignore_retweets: Whether or not to ignore retweets (default True)
         - ignore_replies:  Whether or not to ignore replies  (default False)
     """
